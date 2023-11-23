@@ -1,8 +1,4 @@
-import com.java.dev.bootcamp.ParkingLot.Owner;
-import com.java.dev.bootcamp.ParkingLot.Car;
-import com.java.dev.bootcamp.ParkingLot.ParkingFullException;
-import com.java.dev.bootcamp.ParkingLot.ParkingLot;
-import com.java.dev.bootcamp.ParkingLot.Vehicle;
+import com.java.dev.bootcamp.ParkingLot.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,16 +6,19 @@ import org.mockito.Mockito;
 
 public class ParkingLotTest {
 
-    private Owner owner;
+    private OwnerObserver owner;
+
+    private TrafficObserver trafficObserver;
     @BeforeEach
     void setup()
     {
-        owner=Mockito.mock(Owner.class);
+        owner=Mockito.mock(OwnerObserver.class);
+        trafficObserver=Mockito.mock(TrafficObserver.class);
     }
 
     @Test
     public void parkVehicleException() throws ParkingFullException {
-        Owner owner=new Owner();
+        OwnerObserver owner=new OwnerObserver();
         ParkingLot parkingLot = new ParkingLot(1,owner);
         Vehicle vehicle = new Car();
         vehicle.setVehicleNumber("KA123");
@@ -30,7 +29,7 @@ public class ParkingLotTest {
     }
     @Test
     public void parkVehicle() throws ParkingFullException {
-        Owner owner=new Owner();
+        OwnerObserver owner=new OwnerObserver();
         ParkingLot parkingLot = new ParkingLot(2,owner);
         Vehicle vehicle = new Car();
         vehicle.setVehicleNumber("KA123");
@@ -42,7 +41,7 @@ public class ParkingLotTest {
 
     @Test
     public void parkVehicleDuplicate() throws ParkingFullException {
-        Owner owner=new Owner();
+        OwnerObserver owner=new OwnerObserver();
         ParkingLot parkingLot = new ParkingLot(2,owner);
         Vehicle vehicle = new Car();
         vehicle.setVehicleNumber("KA123");
@@ -53,7 +52,7 @@ public class ParkingLotTest {
     }
     @Test
     public void unParkVehicle() throws ParkingFullException {
-        Owner owner=new Owner();
+        OwnerObserver owner=new OwnerObserver();
         ParkingLot parkingLot = new ParkingLot(1,owner);
         Vehicle vehicle = new Car();
         vehicle.setVehicleNumber("KA123");
@@ -65,7 +64,7 @@ public class ParkingLotTest {
 
     @Test
     public void parkVehicleStatus() throws ParkingFullException {
-        Owner owner=new Owner();
+        OwnerObserver owner=new OwnerObserver();
         ParkingLot parkingLot = new ParkingLot(1,owner);
         Vehicle vehicle = new Car();
         vehicle.setVehicleNumber("KA123");
@@ -81,8 +80,29 @@ public class ParkingLotTest {
         parkingLot.park(vehicle);
         Vehicle vehicle1 = new Car();
         vehicle1.setVehicleNumber("KA1234");
+    parkingLot.register(trafficObserver);
+    parkingLot.register(owner);
     Assertions.assertThrows(ParkingFullException.class,() -> parkingLot.park(vehicle1));
-    Mockito.verify(owner).notifyParking();
+    Mockito.verify(owner).update();
+    Mockito.verify(trafficObserver).update();
+
+
+    }
+
+    @Test
+    public void trafficPoliceShouldBeNotifiedWhenParkingIfFull() throws ParkingFullException {
+
+        ParkingLot parkingLot=new ParkingLot(1,owner);
+        Vehicle vehicle = new Car();
+        vehicle.setVehicleNumber("KA123");
+        parkingLot.park(vehicle);
+        Vehicle vehicle1 = new Car();
+        vehicle1.setVehicleNumber("KA1234");
+        parkingLot.register(trafficObserver);
+        parkingLot.register(owner);
+        Assertions.assertThrows(ParkingFullException.class,() -> parkingLot.park(vehicle1));
+        Mockito.verify(owner).update();
+        Mockito.verify(trafficObserver).update();
 
 
     }
